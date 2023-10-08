@@ -11,14 +11,14 @@ import oba
 
 path = oba.download("https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/blob/main/mistral-7b-instruct-v0.1.Q3_K_S.gguf")
 
-llm = oba.llm(model_path=path)
+llm = oba.llm(path)
 ```
 
 ```python
 messages = {"role": "user", "content": "Hi Mistral."}
 
-for chunk in llm(messages):
-    print(chunk)
+for token in llm.chat(messages):
+    print(token)
 ```
 
 <br>
