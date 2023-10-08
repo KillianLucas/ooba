@@ -1,9 +1,26 @@
-# oba
+A headless [**Oobabooga**](https://github.com/oobabooga/text-generation-webui) wrapper.
 
-https://www.youtube.com/watch?v=NQ-nif4rXGs
+<br>
 
-Let your apps run LLMs — a headless Oobabooga wrapper.
+```shell
+pip install oba
+```
 
-I want to be able to run LLMs locally. It should be painless. It should be headless.
+```python
+import oba
 
-This would make a great halloween update!
+path = oba.download("https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/blob/main/mistral-7b-instruct-v0.1.Q3_K_S.gguf")
+
+llm = oba.llm(model_path=path)
+```
+
+```python
+messages = {"role": "user", "content": "Hi Mistral."}
+
+for chunk in llm(messages):
+    print(chunk)
+```
+
+<br>
+
+https://github.com/KillianLucas/oba/assets/63927363/2ed6949a-d63b-40d4-b085-e0463b569d01
