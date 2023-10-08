@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "ooba"
+version = "0.0.0"
+description = "Run language models on consumer hardware."
+authors = ["Killian Lucas <killian@openinterpreter.com>"]
+license = "AGPL"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
