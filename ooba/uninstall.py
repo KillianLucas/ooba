@@ -9,4 +9,7 @@ def uninstall(confirm=True):
         if user_input.lower() != 'y':
             print("Uninstallation cancelled.")
             return
-    shutil.rmtree(repo_dir)
+    if os.path.exists(repo_dir):
+        shutil.rmtree(repo_dir)
+    else:
+        print(f"The directory `{repo_dir}` does not exist.")

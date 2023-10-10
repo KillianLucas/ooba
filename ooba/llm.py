@@ -10,7 +10,6 @@ from .uninstall import uninstall
 import random
 import sys
 
-
 class llm:
     def __init__(self, path, cpu=False, verbose=False):
 
@@ -44,7 +43,7 @@ class llm:
                 "--model", model_name,
                 "--api-streaming-port", str(self.port),
                 "--extensions", "api",
-                "--api",
+                "--api"
             ]
 
             if self.gpu_choice == "N":
@@ -56,6 +55,7 @@ class llm:
                 print("Running command:", " ".join(cmd))
 
             env = os.environ.copy()
+            env["GPU_CHOICE"] = self.gpu_choice
             env["LAUNCH_AFTER_INSTALL"] = "True"
             if self.verbose:
                 subprocess.Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
@@ -108,8 +108,8 @@ class llm:
             if not self.cpu:
                 print("Auto GPU installation was unsuccessful. Re-installing for CPU use.")
 
-                uninstall(confirm=False)
-                self.__init__(path, cpu=True, verbose=self.verbose)
+                #uninstall(confirm=False)
+                #self.__init__(path, cpu=True, verbose=self.verbose)
 
 
     def chat(self, messages, max_tokens=None, temperature=0):

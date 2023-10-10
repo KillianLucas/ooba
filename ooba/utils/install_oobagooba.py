@@ -15,6 +15,8 @@ def install_oobabooga(self):
 
     ensure_repo_exists(verbose=self.verbose)
 
+    # I think this is actually for pytorch version, not for GPU, so I've commented it out:
+    """
     if self.cpu:
         with open(os.path.join(REPO_DIR, 'one_click.py'), 'r') as file:
             filedata = file.read()
@@ -25,6 +27,17 @@ def install_oobabooga(self):
         # Write the file out again
         with open(os.path.join(REPO_DIR, 'one_click.py'), 'w') as file:
             file.write(filedata)
+    """
+
+    # This lets us run one_click from conda env, not regular python
+    for root, _, files in os.walk(REPO_DIR):
+        for file in files:
+            file_path = os.path.join(root, file)
+            with open(file_path, 'r') as f:
+                filedata = f.read()
+            filedata = filedata.replace('\npython one_click.py', '\n"$INSTALL_ENV_DIR/bin/python" one_click.py')
+            with open(file_path, 'w') as f:
+                f.write(filedata)
 
     #### Detect system
 
@@ -48,7 +61,7 @@ def install_oobabooga(self):
 
     #### Start building run command
 
-    cmd = [self.start_script, "--update"] # perhaps we should add --update if the repo didn't exist
+    base_cmd = [self.start_script]
 
     #### Detect GPU if not already set
 
@@ -78,26 +91,33 @@ def install_oobabooga(self):
     #### Run install command
 
     if self.gpu_choice == "N":
-        cmd += ["--cpu"] # I'm not sure if this is necessary
+        base_cmd += ["--cpu"] # I'm not sure if this is necessary
 
     env = os.environ.copy()
     env["GPU_CHOICE"] = self.gpu_choice
     env["LAUNCH_AFTER_INSTALL"] = "False"
-    process = subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
 
-    # How many lines will this output? We use this for the progress bar.
-    total_lines = 2000 # an estimate
+    update_cmd = base_cmd + ["--update"]
 
-    # Use with statement for tqdm progress bar
-    with tqdm(total=total_lines, ncols=100) as pbar:
-        # Real-time output
-        for line in iter(process.stdout.readline, ''):
-            # Update the progress bar by one step for each line
-            pbar.update(1)
-            if self.verbose:
-                print(line)
+    for cmd in [base_cmd, update_cmd]:
 
-    process.wait()
-    process.terminate()
+        process = subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+
+        # How many lines will this output? We use this for the progress bar.
+        total_lines = 2000 # an estimate
+
+        # Use with statement for tqdm progress bar
+        with tqdm(total=total_lines, ncols=100) as pbar:
+            # Real-time output
+            for line in iter(process.stdout.readline, ''):
+                if self.verbose:
+                    print(line)
+                else:
+                    # Update the progress bar by one step for each line
+                    pbar.update(1)
+
+        process.wait()
+        #process.terminate()
+        
     if self.verbose:
         print("Install complete.")
