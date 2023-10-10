@@ -144,12 +144,12 @@ def install_oobabooga(self):
     pbar = tqdm(total=total_lines, ncols=100)
 
     for cmd in [base_cmd, update_cmd]:
-        process = subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        process = subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, bufsize=1)
 
-        # Real-time output
-        for line in iter(process.stdout.readline, ''):
+        # Read the output line by line
+        for line in iter(process.stdout.readline, ''):            
             if self.verbose:
-                print(line)
+                print(line.strip())
             else:
                 # Update the progress bar by one step for each line
                 pbar.update(1)
