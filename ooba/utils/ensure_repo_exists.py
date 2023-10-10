@@ -11,8 +11,8 @@ TAG = "v1.7"
 def ensure_repo_exists(verbose=False):
     try:
         if not os.path.isdir(REPO_DIR):
-            subprocess.check_call(['git', 'clone', REPO_URL, REPO_DIR])
-            subprocess.check_call(['git', '-C', REPO_DIR, 'checkout', TAG])
+            subprocess.check_call(['git', 'clone', REPO_URL, REPO_DIR], stdout=None if verbose else subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.check_call(['git', '-C', REPO_DIR, 'checkout', TAG], stdout=None if verbose else subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             if verbose:
                 print("Successfully cloned repo.")
         else:

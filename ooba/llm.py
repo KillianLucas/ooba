@@ -19,7 +19,7 @@ from.utils.openai_messages_converters import role_content_to_history
 class llm:
     def __init__(self, path, cpu=False, verbose=False):
 
-        print("Getting started...")
+        print("\nGetting started...\n")
 
         try:
             self.cpu = cpu
@@ -125,14 +125,13 @@ class llm:
         except Exception as e:
             print(e)
 
-            if not self.cpu:
+            if self.gpu_choice == "N":
+                raise
+            else:
                 print("Auto GPU installation was unsuccessful. Re-installing for CPU use.")
 
-                #uninstall(confirm=False)
-                #self.__init__(path, cpu=True, verbose=self.verbose)
-                return
-
-            raise
+                uninstall(confirm=False, entire_repo=True)
+                self.__init__(path, cpu=True, verbose=self.verbose)
 
 
     def chat(self, messages, max_tokens=None, temperature=0):
