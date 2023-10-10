@@ -19,6 +19,8 @@ from.utils.openai_messages_converters import role_content_to_history
 class llm:
     def __init__(self, path, cpu=False, verbose=False):
 
+        print("Getting started...")
+
         try:
             self.cpu = cpu
             self.verbose = verbose
@@ -108,15 +110,17 @@ class llm:
             else:
                 raise Exception("Server took too long to start")
 
+            
             # Warm up the server (idk why it needs this, but it does)
             if self.verbose:
                 print("Warming up the server...")
                 
             for _ in self.chat([{"role": "user", "content": "Hi"}], max_tokens=1):
-                pass
+                break
 
             if self.verbose:
                 print("Server is warmed up.")
+            
 
         except Exception as e:
             print(e)
@@ -152,6 +156,7 @@ class llm:
             request["auto_max_new_tokens"] = True
         else:
             request["max_new_tokens"] = max_tokens
+            request["auto_max_new_tokens"] = False
 
         q = Queue()
 

@@ -125,33 +125,30 @@ def install_oobabooga(self):
 
     update_cmd = base_cmd + ["--update"]
 
-    for cmd in [base_cmd, update_cmd]:
+    # Initialize tqdm progress bar
+    total_lines = 1738
+    pbar = tqdm(total=total_lines, ncols=100)
 
+    for cmd in [base_cmd, update_cmd]:
         process = subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
 
-        # Initialize a counter for the number of lines outputted
-        line_count = 0
-
-        # This is an estimate
-        total_lines = 2500
-
-        # Use with statement for tqdm progress bar
-        with tqdm(total=total_lines, ncols=100) as pbar:
-            # Real-time output
-            for line in iter(process.stdout.readline, ''):
-                if self.verbose:
-                    print(line)
-                else:
-                    line_count += 1
-                    # Update the progress bar by one step for each line
-                    pbar.update(1)
-
-        # After the process is done, fill the progress bar to 100%
-        if not self.verbose and line_count < total_lines:
-            pbar.update(total_lines - line_count)
+        # Real-time output
+        for line in iter(process.stdout.readline, ''):
+            if self.verbose:
+                print(line)
+            else:
+                # Update the progress bar by one step for each line
+                pbar.update(1)
 
         process.wait()
-        #process.terminate()
+
+    # After all processes are done, fill the progress bar to 100%
+    if not self.verbose:
+        pbar.n = total_lines
+        pbar.refresh()
+
+    # Close the progress bar
+    pbar.close()
         
     if self.verbose:
         print("Install complete.")
