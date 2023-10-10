@@ -79,19 +79,6 @@ class llm:
                 subprocess.Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
             else:
                 subprocess.Popen(cmd, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            
-            ##### DEBUG #####
-            """
-            while True:
-                time.sleep(3)
-                if process.stderr:
-                    for line in iter(process.stderr.readline, ''):
-                        print(line)
-                if process.stdout:
-                    for line in iter(process.stdout.readline, ''):
-                        print(line)
-            """
-            ##### DEBUG #####
 
             self.uri = f'ws://localhost:{self.port}/api/v1/chat-stream'
 
@@ -135,16 +122,26 @@ class llm:
 
 
     def chat(self, messages, max_tokens=None, temperature=0):
+        
+        if any([message["role"] == "system" for message in messages[1:]]):
+            raise ValueError("Only the first message can have {'role': 'system'}.")
+        
+        if "system" in messages[0]["role"]:
+            system_message = messages[0]["content"]
+            messages = messages[1:]
+        else:
+            system_message = "You are a helpful AI assistant."
 
         if messages[-1]["role"] != "user":
             raise ValueError("The last message role must be 'user'")
-        
+
         user_input = messages[-1]["content"]
         messages = messages[:-1]
 
         messages = role_content_to_history(messages)
 
         request = {
+            'context': system_message,
             'user_input': user_input,
             'history': messages,
             'mode': 'chat', # Valid options: 'chat', 'chat-instruct', 'instruct'

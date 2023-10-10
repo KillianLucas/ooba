@@ -16,7 +16,7 @@ def test_ooba():
 
     llm = ooba.llm(path, verbose=True)
 
-    messages = {"role": "user", "content": "Hi Mistral."}
+    messages = [{"role": "user", "content": "Hi Mistral."}]
 
     for token in llm.chat(messages):
         print(token)

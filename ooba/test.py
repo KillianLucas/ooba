@@ -7,7 +7,10 @@ path = ooba.download("https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-G
 
 llm = ooba.llm(path, verbose=True, cpu=True)
 
-messages = [{"role": "user", "content": "Hi Mistral."}]
+messages = [
+    {"role": "system", "content": "Your name is Shoggoth."},
+    {"role": "user", "content": "What's your name?"}
+]
 
 for token in llm.chat(messages):
     print(token)
