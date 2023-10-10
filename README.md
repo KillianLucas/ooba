@@ -1,4 +1,4 @@
-A headless [**Oobabooga**](https://github.com/ooobabooga/text-generation-webui) wrapper.
+A headless [**Oobabooga**](https://github.com/oobabooga/text-generation-webui) wrapper.
 
 <br>
 
