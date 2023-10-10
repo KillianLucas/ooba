@@ -9,8 +9,8 @@ from .get_app_dir import get_app_dir
 REPO_DIR = os.path.join(get_app_dir(), 'text-generation-ui')
 
 run_cmd_wrapper = """def run_cmd(cmd, **kwargs):
-    if cmd.startswith("python"):
-        cmd = cmd.replace("python", sys.executable, 1)
+    cmd = cmd.replace("python ", '"' + sys.executable + '" ')
+    print("Running command:", cmd)
     return wrapped_run_cmd(cmd, **kwargs)
 
 def wrapped_run_cmd"""
@@ -19,6 +19,11 @@ def install_oobabooga(self):
 
     if self.verbose:
         print(f"Installing LLM interface package...")
+    else:
+        # Incinerate all stout
+        #self.original_stdout = sys.stdout
+        #sys.stdout = open(os.devnull, 'w')
+        pass
 
     ensure_repo_exists(verbose=self.verbose)
 
@@ -50,14 +55,21 @@ def install_oobabooga(self):
                 continue
 
 
-    # Force all commands in one_click to be run from conda's python
     with open(os.path.join(REPO_DIR, 'one_click.py'), 'r') as file:
             filedata = file.read()
+    # Force all commands in one_click to be run from conda's python
     if "wrapped_run_cmd" not in filedata:
         filedata = filedata.replace("def run_cmd", run_cmd_wrapper)
     if "git checkout main" not in filedata:
-        filedata = filedata.replace("git pull --autostash", "git checkout main && git pull --autostash")
-    # Write the file out again
+        git_checkout_main = 'run_cmd("git checkout main", assert_success=False, environment=True)'
+        git_pull_autostash = 'run_cmd("git pull --autostash", assert_success=False, environment=True)'
+        existing_line = "run_cmd(\"git pull --autostash\", assert_success=True, environment=True)"
+        lines = filedata.split('\n')
+        for i, line in enumerate(lines):
+            if existing_line in line:
+                indentation = len(line) - len(line.lstrip())
+                lines[i] = f"{indentation * ' '}{git_checkout_main}\n{indentation * ' '}{git_pull_autostash}"
+        filedata = '\n'.join(lines)
     with open(os.path.join(REPO_DIR, 'one_click.py'), 'w') as file:
         file.write(filedata)
 
@@ -124,6 +136,8 @@ def install_oobabooga(self):
     env["INSTALL_EXTENSIONS"] = "False"
 
     update_cmd = base_cmd + ["--update"]
+
+    print("Setting up the language model...\n\n(This may take ~30 minutes. The progress bar will appear to freeze at multiple points— some steps take several minutes.)\n")
 
     # Initialize tqdm progress bar
     total_lines = 1738
