@@ -15,7 +15,7 @@ run_cmd_wrapper = """def run_cmd(cmd, **kwargs):
 
 def wrapped_run_cmd"""
 
-def install(force_reinstall=False, verbose=False, cpu=False, gpu_choice=None, start_script=None, full_auto=False):
+def install(force_reinstall=False, verbose=False, cpu=False, gpu_choice=None, full_auto=False):
     """
     full_auto = if it can't find GPU, it will default to CPU. if this is false, we'll ask the user what to do if we can't detect a GPU
     """

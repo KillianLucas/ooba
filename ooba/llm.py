@@ -36,7 +36,8 @@ class llm:
             if cpu:
                 self.gpu_choice = "N"
 
-            install_oobabooga(gpu_choice=self.gpu_choice, start_script=self.start_script)
+            # This will exit if it's already installed
+            install_oobabooga(gpu_choice=self.gpu_choice)
 
             # Start oobabooga server
             model_dir = "/".join(path.split("/")[:-1])
@@ -123,7 +124,7 @@ class llm:
             else:
                 print("Auto GPU installation was unsuccessful. Re-installing for CPU use.")
 
-                uninstall(confirm=False, entire_repo=True)
+                install_oobabooga(force_reinstall=True, cpu=True)
                 self.__init__(path, cpu=True, verbose=self.verbose)
 
 
