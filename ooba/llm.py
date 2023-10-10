@@ -151,7 +151,7 @@ class llm:
         if max_tokens == None:
             request["auto_max_new_tokens"] = True
         else:
-            request["max_tokens"] = max_tokens
+            request["max_new_tokens"] = max_tokens
 
         q = Queue()
 
