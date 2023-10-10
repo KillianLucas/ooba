@@ -7,7 +7,7 @@ license = "AGPL"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.9"
 appdirs = "^1.4.4"
 huggingface-hub = "^0.17.3"
 websockets = "^11.0.3"
