@@ -15,6 +15,16 @@ def install_oobabooga(self):
 
     ensure_repo_exists(verbose=self.verbose)
 
+    if self.cpu:
+        with open(os.path.join(REPO_DIR, 'one_click.py'), 'r') as file:
+            filedata = file.read()
+
+        # Force it to install CPU-only requirements
+        filedata = filedata.replace('elif is_cpu:', 'elif True:')
+
+        # Write the file out again
+        with open(os.path.join(REPO_DIR, 'one_click.py'), 'w') as file:
+            file.write(filedata)
 
     #### Detect system
 
@@ -35,6 +45,10 @@ def install_oobabooga(self):
 
     if self.verbose:
         print("Start command:", self.start_script)
+
+    #### Start building run command
+
+    cmd = [self.start_script, "--update"] # perhaps we should add --update if the repo didn't exist
 
     #### Detect GPU if not already set
 
@@ -63,10 +77,8 @@ def install_oobabooga(self):
 
     #### Run install command
 
-    cmd = [self.start_script]
-
     if self.gpu_choice == "N":
-        cmd.append("--cpu") # I'm not sure if this is necessary for install
+        cmd += ["--cpu"] # I'm not sure if this is necessary
 
     env = os.environ.copy()
     env["GPU_CHOICE"] = self.gpu_choice

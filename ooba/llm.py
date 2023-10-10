@@ -8,12 +8,14 @@ from .utils.get_open_ports import get_open_ports
 from .utils.install_oobagooba import install_oobabooga
 from .uninstall import uninstall
 import random
+import sys
 
 
 class llm:
     def __init__(self, path, cpu=False, verbose=False):
 
         try:
+            self.cpu = cpu
             self.verbose = verbose
 
             if cpu:
@@ -26,7 +28,6 @@ class llm:
             install_oobabooga(self)
 
             # Start oobabooga server
-            
             model_dir = "/".join(path.split("/")[:-1])
             model_name = path.split("/")[-1]
 
@@ -43,7 +44,7 @@ class llm:
                 "--model", model_name,
                 "--api-streaming-port", str(self.port),
                 "--extensions", "api",
-                "--api"
+                "--api",
             ]
 
             if self.gpu_choice == "N":
@@ -56,7 +57,10 @@ class llm:
 
             env = os.environ.copy()
             env["LAUNCH_AFTER_INSTALL"] = "True"
-            subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+            if self.verbose:
+                subprocess.Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
+            else:
+                subprocess.Popen(cmd, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             
             ##### DEBUG #####
             """
@@ -74,7 +78,7 @@ class llm:
             self.uri = f'ws://localhost:{self.port}/api/v1/chat-stream'
 
             # Wait for it to be ready by checking the port
-            for attempt in range(20):
+            for attempt in range(50):
                 open_ports = get_open_ports(0, 10000)
                 if self.port in open_ports:
                     if self.verbose:
@@ -83,7 +87,7 @@ class llm:
                 else:
                     if self.verbose:
                         print(f"Server is not ready... ({attempt+1}/20)")
-                    time.sleep(1)
+                    time.sleep(1.5)
             else:
                 raise Exception("Server took too long to start")
 
@@ -100,10 +104,12 @@ class llm:
 
         except Exception as e:
             print(e)
-            print("Auto GPU installation was unsuccessful. Re-installing for CPU use.")
 
-            uninstall(confirm=False)
-            self.__init__(path, cpu=True, verbose=self.verbose)
+            if not self.cpu:
+                print("Auto GPU installation was unsuccessful. Re-installing for CPU use.")
+
+                uninstall(confirm=False)
+                self.__init__(path, cpu=True, verbose=self.verbose)
 
 
     def chat(self, messages, max_tokens=None, temperature=0):
