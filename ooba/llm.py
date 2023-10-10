@@ -56,9 +56,10 @@ class llm:
 
             env = os.environ.copy()
             env["LAUNCH_AFTER_INSTALL"] = "True"
-            process = subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+            subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
             
             ##### DEBUG #####
+            """
             while True:
                 time.sleep(3)
                 if process.stderr:
@@ -67,6 +68,7 @@ class llm:
                 if process.stdout:
                     for line in iter(process.stdout.readline, ''):
                         print(line)
+            """
             ##### DEBUG #####
 
             self.uri = f'ws://localhost:{self.port}/api/v1/chat-stream'
@@ -88,7 +90,10 @@ class llm:
             # Warm up the server (idk why it needs this, but it does)
             if self.verbose:
                 print("Warming up the server...")
-            asyncio.run(self.chat([{"role": "user", "content": "Hi"}], max_tokens=1))
+                
+            async def warmup_server():
+                await self.chat([{"role": "user", "content": "Hi"}], max_tokens=1)
+            asyncio.run(warmup_server())
 
             if self.verbose:
                 print("Server is warmed up.")
@@ -98,7 +103,7 @@ class llm:
             print("Auto GPU installation was unsuccessful. Re-installing for CPU use.")
 
             uninstall(confirm=False)
-            self.__init__(cpu=True, verbose=self.verbose)
+            self.__init__(path, cpu=True, verbose=self.verbose)
 
 
     def chat(self, messages, max_tokens=None, temperature=0):
