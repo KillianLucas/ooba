@@ -101,6 +101,7 @@ def install(force_reinstall=False, verbose=False, cpu=False, gpu_choice=None, fu
     # Force all commands in one_click to be run from conda's python
     if "wrapped_run_cmd" not in filedata:
         filedata = filedata.replace("def run_cmd", run_cmd_wrapper)
+    # weird little thing that fixed it for me
     if "git checkout main" not in filedata:
         git_checkout_main = 'run_cmd("git checkout main", assert_success=False, environment=True)'
         git_pull_autostash = 'run_cmd("git pull --autostash", assert_success=False, environment=True)'
@@ -131,7 +132,7 @@ def install(force_reinstall=False, verbose=False, cpu=False, gpu_choice=None, fu
 
     update_cmd = base_cmd + ["--update"]
 
-    print("Setting up the language model...\n\n(This may take ~30 minutes. The progress bar will appear to freeze at multiple points— some steps take several minutes.)\n")
+    print("Setting up the language model...\n\nThis can take up to 25 minutes. The progress bar might appear to freeze (some steps take several minutes).\n")
 
     # Initialize tqdm progress bar
     total_lines = 1738
