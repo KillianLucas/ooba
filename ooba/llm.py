@@ -98,9 +98,8 @@ class llm:
             if self.verbose:
                 print("Warming up the server...")
                 
-            async def warmup_server():
-                await self.chat([{"role": "user", "content": "Hi"}], max_tokens=1)
-            asyncio.run(warmup_server())
+            for _ in self.chat([{"role": "user", "content": "Hi"}], max_tokens=1):
+                pass
 
             if self.verbose:
                 print("Server is warmed up.")
