@@ -1,10 +1,10 @@
 import os
-import platform
 import subprocess
 from tqdm import tqdm
-from .detect_gpu import detect_gpu
-from .ensure_repo_exists import ensure_repo_exists
-from .get_app_dir import get_app_dir
+from .utils.detect_hardware import detect_hardware
+from .utils.ensure_repo_exists import ensure_repo_exists
+from .utils.get_app_dir import get_app_dir
+from .uninstall import uninstall
 
 REPO_DIR = os.path.join(get_app_dir(), 'text-generation-ui')
 
@@ -15,9 +15,50 @@ run_cmd_wrapper = """def run_cmd(cmd, **kwargs):
 
 def wrapped_run_cmd"""
 
-def install_oobabooga(self):
+def install(force_reinstall=False, verbose=False, cpu=False, gpu_choice=None, start_script=None, full_auto=False):
+    """
+    full_auto = if it can't find GPU, it will default to CPU. if this is false, we'll ask the user what to do if we can't detect a GPU
+    """
 
-    if self.verbose:
+    if not force_reinstall:
+        installer_files_path = os.path.join(REPO_DIR, 'installer_files')
+        if os.path.exists(installer_files_path):
+            if verbose:
+                print("Oobabooga is already installed.")
+            return
+    else:
+        uninstall(confirm=False, entire_repo=True)
+
+    detected_gpu_choice, start_script_filename = detect_hardware()
+    start_script = os.path.join(REPO_DIR, start_script_filename)
+
+    if cpu:
+        gpu_choice = "N"
+
+    if not full_auto:
+        # If we couldn't find a GPU and the user didn't set one,
+        if detected_gpu_choice == "N" and not gpu_choice:
+
+            # Prompt user for GPU choice if no supported GPU is detected
+
+            print("Could not automatically detect GPU. Please choose your GPU:\n")
+
+            print("A) NVIDIA")
+            print("B) AMD (Linux/MacOS only. Requires ROCm SDK 5.4.2/5.4.3 on Linux)")
+            print("C) Apple M Series")
+            print("D) Intel Arc (IPEX)")
+            print("N) None (I want to run models in CPU mode)\n")
+
+            gpu_choice = input("> ").upper()
+
+            while gpu_choice not in 'ABCDN':
+                print("Invalid choice. Please try again.")
+                gpu_choice = input("> ").upper()
+
+    if not gpu_choice:
+        gpu_choice = detected_gpu_choice
+
+    if verbose:
         print(f"Installing LLM interface package...")
     else:
         # Incinerate all stout
@@ -25,7 +66,7 @@ def install_oobabooga(self):
         #sys.stdout = open(os.devnull, 'w')
         pass
 
-    ensure_repo_exists(verbose=self.verbose)
+    ensure_repo_exists(verbose=verbose)
 
     # I think this is actually for pytorch version, not for GPU, so I've commented it out:
     """
@@ -74,64 +115,17 @@ def install_oobabooga(self):
         file.write(filedata)
 
 
-    #### Detect system
-
-    system = platform.system()
-
-    if system == "Linux":
-        if "microsoft" in platform.uname().release.lower():
-            self.start_script = os.path.join(REPO_DIR, "start_wsl.bat")
-        else:
-            self.start_script = os.path.join(REPO_DIR, "start_linux.sh")
-    elif system == "Windows":
-        self.start_script = os.path.join(REPO_DIR, "start_windows.bat")
-    elif system == "Darwin":
-        self.start_script = os.path.join(REPO_DIR, "start_macos.sh")
-    else:
-        print(f"OS {system} is likely not supported. Assuming system is Linux.")
-        self.start_script = os.path.join(REPO_DIR, "start_linux.sh")
-
-    if self.verbose:
-        print("Start command:", self.start_script)
-
-    #### Start building run command
-
-    base_cmd = [
-        self.start_script
-    ]
-
-    #### Detect GPU if not already set
-
-    if not self.gpu_choice:
-
-        self.gpu_choice = detect_gpu()
-
-        if self.gpu_choice == "N":
-
-            # Prompt user for GPU choice if no supported GPU is detected
-
-            print("Could not automatically detect GPU. Please choose your GPU:\n")
-
-            print("A) NVIDIA")
-            print("B) AMD (Linux/MacOS only. Requires ROCm SDK 5.4.2/5.4.3 on Linux)")
-            print("C) Apple M Series")
-            print("D) Intel Arc (IPEX)")
-            print("N) None (I want to run models in CPU mode)\n")
-
-            self.gpu_choice = input("> ").upper()
-
-            while self.gpu_choice not in 'ABCDN':
-                print("Invalid choice. Please try again.")
-                self.gpu_choice = input("> ").upper()
-
-
     #### Run install command
 
-    if self.gpu_choice == "N":
+    base_cmd = [
+        start_script
+    ]
+
+    if gpu_choice == "N":
         base_cmd += ["--cpu"] # I'm not sure if this is necessary
 
     env = os.environ.copy()
-    env["GPU_CHOICE"] = self.gpu_choice
+    env["GPU_CHOICE"] = gpu_choice
     env["LAUNCH_AFTER_INSTALL"] = "False"
     env["INSTALL_EXTENSIONS"] = "False"
 
@@ -148,7 +142,7 @@ def install_oobabooga(self):
 
         # Read the output line by line
         for line in iter(process.stdout.readline, ''):            
-            if self.verbose:
+            if verbose:
                 print(line.strip())
             else:
                 # Update the progress bar by one step for each line
@@ -157,12 +151,12 @@ def install_oobabooga(self):
         process.wait()
 
     # After all processes are done, fill the progress bar to 100%
-    if not self.verbose:
+    if not verbose:
         pbar.n = total_lines
         pbar.refresh()
 
     # Close the progress bar
     pbar.close()
         
-    if self.verbose:
+    if verbose:
         print("Install complete.")

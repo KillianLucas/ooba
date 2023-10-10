@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ooba"
-version = "0.0.15"
+version = "0.0.16"
 description = "Run language models on consumer hardware."
 authors = ["Killian Lucas <killian@openinterpreter.com>"]
 license = "AGPL"

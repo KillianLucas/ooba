@@ -5,7 +5,7 @@ import json
 import websockets
 import subprocess
 from .utils.get_open_ports import get_open_ports
-from .utils.install_oobagooba import install_oobabooga
+from .utils.detect_hardware import detect_hardware
 from .uninstall import uninstall
 import random
 import sys
@@ -15,6 +15,10 @@ import json
 import websockets
 from queue import Queue
 from.utils.openai_messages_converters import role_content_to_history
+from .install import install as install_oobabooga
+from .utils.get_app_dir import get_app_dir
+
+REPO_DIR = os.path.join(get_app_dir(), 'text-generation-ui')
 
 class llm:
     def __init__(self, path, cpu=False, verbose=False):
@@ -25,14 +29,14 @@ class llm:
             self.cpu = cpu
             self.verbose = verbose
 
+            self.gpu_choice, start_script_filename = detect_hardware()
+
+            self.start_script = os.path.join(REPO_DIR, start_script_filename)
+
             if cpu:
                 self.gpu_choice = "N"
-            else:
-                self.gpu_choice = None # < We'll detect it
 
-            # This will add self.gpu_choice and self.start_script, which we need.
-            # (It will finish very quickly if it's actually already installed!)
-            install_oobabooga(self)
+            install_oobabooga(gpu_choice=self.gpu_choice, start_script=self.start_script)
 
             # Start oobabooga server
             model_dir = "/".join(path.split("/")[:-1])
@@ -98,7 +102,8 @@ class llm:
                 raise Exception("Server took too long to start")
 
             
-            # Warm up the server (idk why it needs this, but it does)
+            # Warm up the server (idk if it needs this)
+            """
             if self.verbose:
                 print("Warming up the server...")
                 
@@ -107,6 +112,7 @@ class llm:
 
             if self.verbose:
                 print("Server is warmed up.")
+            """
             
 
         except Exception as e:

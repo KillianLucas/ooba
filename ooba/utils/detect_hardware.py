@@ -1,9 +1,34 @@
 import subprocess
 import platform
 
+def detect_hardware():
+
+    #### Detect system
+
+    system = platform.system()
+
+    if system == "Linux":
+        if "microsoft" in platform.uname().release.lower():
+            start_script_filename = "start_wsl.bat"
+        else:
+            start_script_filename = "start_linux.sh"
+    elif system == "Windows":
+        start_script_filename = "start_windows.bat"
+    elif system == "Darwin":
+        start_script_filename = "start_macos.sh"
+    else:
+        print(f"OS {system} is likely not supported. Assuming system is Linux.")
+        start_script_filename = "start_linux.sh"
+
+    #### Detect GPU
+
+    gpu_choice = detect_gpu()
+
+    return gpu_choice, start_script_filename
+
 def detect_gpu():
     """
-    Returns GPU in a way Oobabooga likes:
+    This returns a GPU choice in the way Oobabooga likes:
 
     Possible outputs:
     - "A" for NVIDIA GPU
