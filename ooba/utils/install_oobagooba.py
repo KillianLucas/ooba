@@ -127,10 +127,6 @@ def install_oobabooga(self):
 
     for cmd in [base_cmd, update_cmd]:
 
-        print("Running:"*1000, cmd)
-        import time
-        time.sleep(10)
-
         process = subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
 
         # How many lines will this output? We use this for the progress bar.

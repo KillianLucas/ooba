@@ -1,6 +1,6 @@
 import socket
 
-def get_open_ports(start_port=0, end_port=10000, host='localhost'):
+def get_open_ports(start_port=2000, end_port=10000, host='localhost'):
     open_ports = []
     for port in range(start_port, end_port+1):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:

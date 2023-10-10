@@ -9,6 +9,12 @@ from .utils.install_oobagooba import install_oobabooga
 from .uninstall import uninstall
 import random
 import sys
+import threading
+import asyncio
+import json
+import websockets
+from queue import Queue
+from.utils.openai_messages_converters import role_content_to_history
 
 class llm:
     def __init__(self, path, cpu=False, verbose=False):
@@ -32,15 +38,23 @@ class llm:
 
             # Find an open port
             while True:
-                self.port = random.randint(0, 10000)
-                open_ports = get_open_ports(0, 10000)
+                self.port = random.randint(2000, 10000)
+                open_ports = get_open_ports(2000, 10000)
                 if self.port not in open_ports:
+                    break
+
+            # Also find an open port for blocking -- it will error otherwise
+            while True:
+                unused_blocking_port = random.randint(2000, 10000)
+                open_ports = get_open_ports(2000, 10000)
+                if unused_blocking_port not in open_ports:
                     break
 
             cmd = [
                 self.start_script,
                 "--model-dir", model_dir,
                 "--model", model_name,
+                "--api-blocking-port", str(unused_blocking_port),
                 "--api-streaming-port", str(self.port),
                 "--extensions", "api",
                 "--api"
@@ -82,7 +96,7 @@ class llm:
             # Wait for it to be ready by checking the port
             num_attempts = 50
             for attempt in range(num_attempts):
-                open_ports = get_open_ports(0, 10000)
+                open_ports = get_open_ports(2000, 10000)
                 if self.port in open_ports:
                     if self.verbose:
                         print("Server is ready.")
@@ -125,6 +139,8 @@ class llm:
         user_input = messages[-1]["content"]
         messages = messages[:-1]
 
+        messages = role_content_to_history(messages)
+
         request = {
             'user_input': user_input,
             'history': messages,
@@ -137,27 +153,37 @@ class llm:
         else:
             request["max_tokens"] = max_tokens
 
-        async def async_chat():
-            async with websockets.connect(self.uri, ping_interval=None) as websocket:
-                await websocket.send(json.dumps(request))
+        q = Queue()
 
-                current_length = 0
+        def run_async_code():
+            async def async_chat():
+                async with websockets.connect(self.uri, ping_interval=None) as websocket:
+                    await websocket.send(json.dumps(request))
 
-                while True:
-                    incoming_data = await websocket.recv()
-                    incoming_data = json.loads(incoming_data)
+                    while True:
+                        incoming_data = await websocket.recv()
+                        incoming_data = json.loads(incoming_data)
 
-                    match incoming_data['event']:
-                        case 'text_stream':
-                            new_history = incoming_data['history']
-                            if not new_history['visible']:
-                                continue
-                            token = new_history['visible'][-1][1][current_length:]
-                            current_length += len(token)
-                            yield token
-                        case 'stream_end':
-                            return
-                    
-        # Create a new event loop and run the async function in it
-        loop = asyncio.new_event_loop()
-        return loop.run_until_complete(async_chat())
+                        match incoming_data['event']:
+                            case 'text_stream':
+                                new_history = incoming_data['history']
+                                if not new_history['visible']:
+                                    continue
+                                token = new_history['visible'][-1][1]
+                                q.put(token)
+                            case 'stream_end':
+                                q.put(None)  # signal the end
+                                return
+
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            loop.run_until_complete(async_chat())
+
+        t = threading.Thread(target=run_async_code)
+        t.start()
+
+        while True:
+            item = q.get()
+            if item is None:  # signal for completion
+                break
+            yield item
