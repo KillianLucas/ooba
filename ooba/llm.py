@@ -57,6 +57,8 @@ class llm:
             env = os.environ.copy()
             env["GPU_CHOICE"] = self.gpu_choice
             env["LAUNCH_AFTER_INSTALL"] = "True"
+            env["INSTALL_EXTENSIONS"] = "False"
+            
             if self.verbose:
                 subprocess.Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
             else:
@@ -78,7 +80,8 @@ class llm:
             self.uri = f'ws://localhost:{self.port}/api/v1/chat-stream'
 
             # Wait for it to be ready by checking the port
-            for attempt in range(50):
+            num_attempts = 50
+            for attempt in range(num_attempts):
                 open_ports = get_open_ports(0, 10000)
                 if self.port in open_ports:
                     if self.verbose:
@@ -86,7 +89,7 @@ class llm:
                     break
                 else:
                     if self.verbose:
-                        print(f"Server is not ready... ({attempt+1}/20)")
+                        print(f"Server is not ready... ({attempt+1}/{num_attempts})")
                     time.sleep(1.5)
             else:
                 raise Exception("Server took too long to start")
@@ -110,6 +113,9 @@ class llm:
 
                 #uninstall(confirm=False)
                 #self.__init__(path, cpu=True, verbose=self.verbose)
+                return
+
+            raise
 
 
     def chat(self, messages, max_tokens=None, temperature=0):

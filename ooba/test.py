@@ -1,7 +1,7 @@
 
 import ooba
 
-#ooba.uninstall(confirm=False)
+ooba.uninstall(entire_repo=True)
 
 path = ooba.download("https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF")
 
