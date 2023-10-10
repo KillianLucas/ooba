@@ -158,6 +158,7 @@ class llm:
         def run_async_code():
             async def async_chat():
                 async with websockets.connect(self.uri, ping_interval=None) as websocket:
+                    current_length = 0
                     await websocket.send(json.dumps(request))
 
                     while True:
@@ -169,7 +170,8 @@ class llm:
                                 new_history = incoming_data['history']
                                 if not new_history['visible']:
                                     continue
-                                token = new_history['visible'][-1][1]
+                                token = new_history['visible'][-1][1][current_length:]
+                                current_length += len(token)
                                 q.put(token)
                             case 'stream_end':
                                 q.put(None)  # signal the end

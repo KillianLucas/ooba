@@ -129,8 +129,11 @@ def install_oobabooga(self):
 
         process = subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
 
-        # How many lines will this output? We use this for the progress bar.
-        total_lines = 2000 # an estimate
+        # Initialize a counter for the number of lines outputted
+        line_count = 0
+
+        # This is an estimate
+        total_lines = 2500
 
         # Use with statement for tqdm progress bar
         with tqdm(total=total_lines, ncols=100) as pbar:
@@ -139,8 +142,13 @@ def install_oobabooga(self):
                 if self.verbose:
                     print(line)
                 else:
+                    line_count += 1
                     # Update the progress bar by one step for each line
                     pbar.update(1)
+
+        # After the process is done, fill the progress bar to 100%
+        if not self.verbose and line_count < total_lines:
+            pbar.update(total_lines - line_count)
 
         process.wait()
         #process.terminate()
