@@ -1,3 +1,5 @@
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1EsiOIQ7IQEui1gYEcHjLZPQxP9pVIlt_?usp=sharing)
+
 A headless [**Oobabooga**](https://github.com/oobabooga/text-generation-webui) wrapper.
 
 <br>
