@@ -176,7 +176,7 @@ class llm:
                             # This happens if they cancel mid-stream
                             if self.verbose:
                                 print(e)
-                            break
+                            return
                         incoming_data = json.loads(incoming_data)
 
                         match incoming_data['event']:
