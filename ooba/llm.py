@@ -165,7 +165,7 @@ class llm:
 
         def run_async_code():
             async def async_chat():
-                async with websockets.connect(self.uri, ping_interval=None) as websocket:
+                async with websockets.connect(self.uri, ping_interval=None, open_timeout=9999) as websocket:
                     current_length = 0
                     await websocket.send(json.dumps(request))
 
