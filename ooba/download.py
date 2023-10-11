@@ -29,7 +29,7 @@ def download_gguf(url, path, gguf_quality):
     final_path = os.path.join(path, model_name)
 
     if os.path.exists(final_path):
-        print(f"Model '{final_path}' already exists.")
+        print(f"Located '{final_path}', which has already been downloaded.")
         return final_path
 
     hf_hub_download(
