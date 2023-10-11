@@ -170,7 +170,13 @@ class llm:
                     await websocket.send(json.dumps(request))
 
                     while True:
-                        incoming_data = await websocket.recv()
+                        try:
+                            incoming_data = await websocket.recv()
+                        except websockets.exceptions.ConnectionClosedError as e:
+                            # This happens if they cancel mid-stream
+                            if self.verbose:
+                                print(e)
+                            break
                         incoming_data = json.loads(incoming_data)
 
                         match incoming_data['event']:
