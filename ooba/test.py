@@ -5,7 +5,7 @@ ooba.uninstall(entire_repo=True)
 
 path = ooba.download("https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF")
 
-llm = ooba.llm(path, verbose=True, cpu=True)
+llm = ooba.llm(path, verbose=False, cpu=True)
 
 messages = [
     {"role": "system", "content": "Your name is Shoggoth."},
@@ -14,3 +14,9 @@ messages = [
 
 for token in llm.chat(messages):
     print(token)
+    break
+
+print("Second one:")
+for token in llm.chat(messages):
+    print(token)
+    break

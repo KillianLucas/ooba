@@ -21,11 +21,13 @@ from .utils.get_app_dir import get_app_dir
 REPO_DIR = os.path.join(get_app_dir(), 'text-generation-ui')
 
 class llm:
-    def __init__(self, path, cpu=False, verbose=False):
+    def __init__(self, path, cpu=False, verbose=False, first_time=True):
 
-        print("\nGetting started...\n")
+        if first_time:
+            print("\nGetting started...")
 
         try:
+            self.path = path
             self.cpu = cpu
             self.verbose = verbose
 
@@ -81,9 +83,9 @@ class llm:
             env["INSTALL_EXTENSIONS"] = "False"
             
             if self.verbose:
-                subprocess.Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
+                self.process = subprocess.Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
             else:
-                subprocess.Popen(cmd, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                self.process = subprocess.Popen(cmd, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
             self.uri = f'ws://localhost:{self.port}/api/v1/chat-stream'
 
@@ -127,9 +129,20 @@ class llm:
                 install_oobabooga(force_reinstall=True, cpu=True)
                 self.__init__(path, cpu=True, verbose=self.verbose)
 
+        if first_time:
+            # Hack to fix it not working multiple times in a row. Must change this soon
+            self.first_time = True
+
 
     def chat(self, messages, max_tokens=None, temperature=0):
-        
+
+        # Hack to fix it not working multiple times in a row. Must change this soon
+        if self.first_time:
+            self.first_time = False
+        else:
+            self.process.terminate()
+            self.__init__(self.path, cpu=self.cpu, verbose=self.verbose, first_time=False)
+                
         if any([message["role"] == "system" for message in messages[1:]]):
             raise ValueError("Only the first message can have {'role': 'system'}.")
         

@@ -132,7 +132,7 @@ def install(force_reinstall=False, verbose=False, cpu=False, gpu_choice=None, fu
 
     update_cmd = base_cmd + ["--update"]
 
-    print("Setting up the language model...\n\nThis can take up to 25 minutes. The progress bar might appear to freeze (some steps take several minutes).\n")
+    print("Setting up the language model...\n\nThis can take up to 15 minutes. The progress bar might appear to freeze (some steps take several minutes).\n")
 
     # Initialize tqdm progress bar
     total_lines = 1738
