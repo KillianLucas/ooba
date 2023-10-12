@@ -8,10 +8,7 @@ def detect_hardware():
     system = platform.system()
 
     if system == "Linux":
-        if "microsoft" in platform.uname().release.lower():
-            start_script_filename = "start_wsl.bat"
-        else:
-            start_script_filename = "start_linux.sh"
+        start_script_filename = "start_linux.sh"
     elif system == "Windows":
         start_script_filename = "start_windows.bat"
     elif system == "Darwin":
