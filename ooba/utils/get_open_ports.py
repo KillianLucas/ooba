@@ -1,6 +1,8 @@
 import asyncio
 import websockets
 
+"""Not needed anymore?"""
+
 async def check_websocket(port, uri='ws://localhost'):
     uri = f"{uri}:{port}"
     try:
