@@ -42,20 +42,20 @@ class llm:
             install_oobabooga(gpu_choice=self.gpu_choice)
 
             # Start oobabooga server
-            model_dir = "/".join(path.split("/")[:-1])
-            model_name = path.split("/")[-1]
+            model_dir = os.path.dirname(path)
+            model_name = os.path.basename(path)
 
             # Find an open port
             while True:
                 self.port = random.randint(2000, 10000)
-                open_ports = get_open_ports(2000, 10000)
+                open_ports = asyncio.run(get_open_ports(2000, 10000))
                 if self.port not in open_ports:
                     break
 
             # Also find an open port for blocking -- it will error otherwise
             while True:
                 unused_blocking_port = random.randint(2000, 10000)
-                open_ports = get_open_ports(2000, 10000)
+                open_ports = asyncio.run(get_open_ports(2000, 10000))
                 if unused_blocking_port not in open_ports:
                     break
 
@@ -92,7 +92,7 @@ class llm:
             # Wait for it to be ready by checking the port
             num_attempts = 50
             for attempt in range(num_attempts):
-                open_ports = get_open_ports(2000, 10000)
+                open_ports = asyncio.run(get_open_ports(2000, 10000))
                 if self.port in open_ports:
                     if self.verbose:
                         print("Server is ready.")
