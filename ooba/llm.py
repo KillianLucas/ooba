@@ -5,6 +5,7 @@ import json
 import websockets
 import subprocess
 from .utils.get_open_ports import get_open_ports
+from .utils.check_port import check_port
 from .utils.detect_hardware import detect_hardware
 from .uninstall import uninstall
 import random
@@ -48,15 +49,13 @@ class llm:
             # Find an open port
             while True:
                 self.port = random.randint(2000, 10000)
-                open_ports = asyncio.run(get_open_ports(2000, 10000))
-                if self.port not in open_ports:
+                if self.port != asyncio.run(check_port(self.port, verbose=self.verbose)):
                     break
 
             # Also find an open port for blocking -- it will error otherwise
             while True:
                 unused_blocking_port = random.randint(2000, 10000)
-                open_ports = asyncio.run(get_open_ports(2000, 10000))
-                if unused_blocking_port not in open_ports:
+                if unused_blocking_port != asyncio.run(check_port(unused_blocking_port, verbose=self.verbose)):
                     break
 
             cmd = [
@@ -92,8 +91,7 @@ class llm:
             # Wait for it to be ready by checking the port
             num_attempts = 50
             for attempt in range(num_attempts):
-                open_ports = asyncio.run(get_open_ports(2000, 10000))
-                if self.port in open_ports:
+                if self.port == asyncio.run(check_port(self.port, verbose=self.verbose)):
                     if self.verbose:
                         print("Server is ready.")
                     break
