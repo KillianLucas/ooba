@@ -55,6 +55,9 @@ class llm:
             # Also find an open port for blocking -- it will error otherwise
             while True:
                 unused_blocking_port = random.randint(2000, 10000)
+                #Don't use the same port, there is a small chance randint generates same int.
+                if self.port == unused_blocking_port:
+                    continue
                 if unused_blocking_port != asyncio.run(check_port(unused_blocking_port, verbose=self.verbose)):
                     break
 
