@@ -139,9 +139,9 @@ class llm:
         # Hack to fix it not working multiple times in a row. Must change this soon
         if self.first_time:
             self.first_time = False
-        else:
-            self.process.terminate()
-            self.__init__(self.path, cpu=self.cpu, verbose=self.verbose, first_time=False)
+        #else:
+        #    self.process.terminate()
+        #    self.__init__(self.path, cpu=self.cpu, verbose=self.verbose, first_time=False)
                 
         if any([message["role"] == "system" for message in messages[1:]]):
             raise ValueError("Only the first message can have {'role': 'system'}.")
