@@ -58,7 +58,7 @@ class llm:
                 if unused_blocking_port == self.port:
                     continue
                 else:
-                    open_ports = get_open_ports(self.port, self.port+1)
+                    open_ports = get_open_ports(unused_blocking_port, unused_blocking_port+1)
                     if unused_blocking_port not in open_ports:
                         break
 
