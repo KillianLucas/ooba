@@ -138,7 +138,7 @@ def install(force_reinstall=False, verbose=False, cpu=False, gpu_choice=None, fu
     total_lines = 1738
     pbar = tqdm(total=total_lines, ncols=100)
 
-    for cmd in [base_cmd, update_cmd]:
+    for cmd in update_cmd:
         process = subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, bufsize=1)
 
         # Read the output line by line
