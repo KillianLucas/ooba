@@ -23,8 +23,7 @@ REPO_DIR = os.path.join(get_app_dir(), 'text-generation-ui')
 class llm:
     def __init__(self, path, cpu=False, verbose=False):
 
-        if first_time:
-            print("\nGetting started...")
+        print("Initializing server, please wait...")
 
         try:
             self.path = path
@@ -100,7 +99,7 @@ class llm:
                 else:
                     if self.verbose:
                         print(f"Server is not ready... ({attempt+1}/{num_attempts})")
-                    time.sleep(1.5)
+                    time.sleep(5)
             else:
                 raise Exception("Server took too long to start")
 
