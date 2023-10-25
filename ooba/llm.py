@@ -47,16 +47,19 @@ class llm:
             # Find an open port
             while True:
                 self.port = random.randint(2000, 10000)
-                open_ports = get_open_ports(2000, 10000)
+                open_ports = get_open_ports(self.port, self.port+1)
                 if self.port not in open_ports:
                     break
 
             # Also find an open port for blocking -- it will error otherwise
             while True:
                 unused_blocking_port = random.randint(2000, 10000)
-                open_ports = get_open_ports(2000, 10000)
-                if unused_blocking_port not in open_ports:
-                    break
+                if unused_blocking_port == self.port:
+                    continue
+                else:
+                    open_ports = get_open_ports(unused_blocking_port, unused_blocking_port+1)
+                    if unused_blocking_port not in open_ports:
+                        break
 
             cmd = [
                 self.start_script,
@@ -91,7 +94,7 @@ class llm:
             # Wait for it to be ready by checking the port
             num_attempts = 50
             for attempt in range(num_attempts):
-                open_ports = get_open_ports(2000, 10000)
+                open_ports = get_open_ports(self.port, self.port+1)
                 if self.port in open_ports:
                     if self.verbose:
                         print("Server is ready.")
