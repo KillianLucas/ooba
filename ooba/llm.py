@@ -21,10 +21,9 @@ from .utils.get_app_dir import get_app_dir
 REPO_DIR = os.path.join(get_app_dir(), 'text-generation-ui')
 
 class llm:
-    def __init__(self, path, cpu=False, verbose=False, first_time=True):
+    def __init__(self, path, cpu=False, verbose=False):
 
-        if first_time:
-            print("\nGetting started...")
+        print("Initializing server, please wait...")
 
         try:
             self.path = path
@@ -42,8 +41,8 @@ class llm:
             install_oobabooga(gpu_choice=self.gpu_choice)
 
             # Start oobabooga server
-            model_dir = "/".join(path.split("/")[:-1])
-            model_name = path.split("/")[-1]
+            model_dir = os.path.dirname(path)
+            model_name = os.path.basename(path)
 
             # Find an open port
             while True:
@@ -103,7 +102,7 @@ class llm:
                 else:
                     if self.verbose:
                         print(f"Server is not ready... ({attempt+1}/{num_attempts})")
-                    time.sleep(1.5)
+                    time.sleep(5)
             else:
                 raise Exception("Server took too long to start")
 
@@ -132,20 +131,15 @@ class llm:
                 install_oobabooga(force_reinstall=True, cpu=True)
                 self.__init__(path, cpu=True, verbose=self.verbose)
 
-        if first_time:
-            # Hack to fix it not working multiple times in a row. Must change this soon
-            self.first_time = True
-
-
     def chat(self, messages, max_tokens=None, temperature=0):
 
-        # Hack to fix it not working multiple times in a row. Must change this soon
-        if self.first_time:
-            self.first_time = False
-        else:
+        # If port is closed, Terminate and restart server
+        if self.port not in get_open_ports(self.port, self.port +1):
+            if self.verbose:
+                print(f"Port {self.port} is not open. Restarting server")
             self.process.terminate()
-            self.__init__(self.path, cpu=self.cpu, verbose=self.verbose, first_time=False)
-                
+            self.__init__(self.path, cpu=self.cpu, verbose=self.verbose)
+         
         if any([message["role"] == "system" for message in messages[1:]]):
             raise ValueError("Only the first message can have {'role': 'system'}.")
         
